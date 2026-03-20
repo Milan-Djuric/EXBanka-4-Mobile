@@ -4,6 +4,7 @@ import { colors } from '../theme';
 
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import AccountsScreen from '../screens/accounts/AccountsScreen';
+import AccountDetailScreen from '../screens/accounts/AccountDetailScreen';
 import PaymentsScreen from '../screens/payments/PaymentsScreen';
 import ApprovalsScreen from '../screens/approvals/ApprovalsScreen';
 import ApprovalDetailScreen from '../screens/approvals/ApprovalDetailScreen';
@@ -24,7 +25,8 @@ function DashboardStack() {
 function AccountsStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Accounts" component={AccountsScreen} options={{ title: 'Računi' }} />
+      <Stack.Screen name="Accounts"       component={AccountsScreen}       options={{ title: 'Računi' }} />
+      <Stack.Screen name="AccountDetail"  component={AccountDetailScreen}  options={{ title: 'Detalji računa' }} />
     </Stack.Navigator>
   );
 }
