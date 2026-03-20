@@ -5,6 +5,7 @@ import { colors } from '../theme';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import AccountsScreen from '../screens/accounts/AccountsScreen';
 import AccountDetailScreen from '../screens/accounts/AccountDetailScreen';
+import RenameAccountScreen from '../screens/accounts/RenameAccountScreen';
 import PaymentsScreen from '../screens/payments/PaymentsScreen';
 import ApprovalsScreen from '../screens/approvals/ApprovalsScreen';
 import ApprovalDetailScreen from '../screens/approvals/ApprovalDetailScreen';
@@ -27,6 +28,7 @@ function AccountsStack() {
     <Stack.Navigator>
       <Stack.Screen name="Accounts"       component={AccountsScreen}       options={{ title: 'Računi' }} />
       <Stack.Screen name="AccountDetail"  component={AccountDetailScreen}  options={{ title: 'Detalji računa' }} />
+      <Stack.Screen name="RenameAccount"  component={RenameAccountScreen}  options={{ title: 'Promena naziva' }} />
     </Stack.Navigator>
   );
 }

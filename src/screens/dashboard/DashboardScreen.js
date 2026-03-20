@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -141,7 +141,7 @@ export default function DashboardScreen({ navigation }) {
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Dobrodošli,</Text>
-          <Text style={styles.userName}>{user?.firstName} {user?.lastName}</Text>
+          <Text style={styles.userName}>{user?.first_name} {user?.last_name}</Text>
           <Text style={styles.userEmail}>{user?.email}</Text>
         </View>
         <TouchableOpacity style={styles.logoutBtn} onPress={logout}>

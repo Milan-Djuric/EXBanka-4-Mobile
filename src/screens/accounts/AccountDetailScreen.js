@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -51,6 +52,11 @@ export default function AccountDetailScreen({ route, navigation }) {
   }, [accountId]);
 
   useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
+
+  // Reload when returning from RenameAccount or other sub-screens
+  useFocusEffect(useCallback(() => {
+    if (!loading) load();
+  }, [load, loading]));
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
