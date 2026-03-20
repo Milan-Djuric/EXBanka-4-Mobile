@@ -5,6 +5,7 @@ import {
   Platform, ScrollView, Alert,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
+import { colors } from '../../theme';
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
@@ -50,16 +51,22 @@ export default function LoginScreen({ navigation }) {
     >
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <Text style={styles.logo}>EXBanka</Text>
-          <Text style={styles.subtitle}>Klijentski portal</Text>
+          <View style={styles.logoBox}>
+            <Text style={styles.logoLetter}>A</Text>
+          </View>
+          <Text style={styles.logo}>
+            Anka<Text style={styles.logoBrand}>Banka</Text>
+          </Text>
+          <Text style={styles.subtitle}>KLIJENTSKI PORTAL</Text>
+          <View style={styles.divider} />
         </View>
 
-        <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
+        <View style={styles.card}>
+          <Text style={styles.label}>EMAIL</Text>
           <TextInput
             style={[styles.input, errors.email && styles.inputError]}
             placeholder="vas@email.com"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.textMuted}
             value={email}
             onChangeText={(v) => { setEmail(v); setErrors((e) => ({ ...e, email: null })); }}
             keyboardType="email-address"
@@ -69,12 +76,12 @@ export default function LoginScreen({ navigation }) {
           />
           {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
-          <Text style={styles.label}>Lozinka</Text>
+          <Text style={[styles.label, { marginTop: 20 }]}>LOZINKA</Text>
           <View style={[styles.passwordContainer, errors.password && styles.inputError]}>
             <TextInput
               style={styles.passwordInput}
               placeholder="••••••••"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               value={password}
               onChangeText={(v) => { setPassword(v); setErrors((e) => ({ ...e, password: null })); }}
               secureTextEntry={!showPassword}
@@ -94,7 +101,7 @@ export default function LoginScreen({ navigation }) {
           >
             {loading
               ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.buttonText}>Prijavi se</Text>}
+              : <Text style={styles.buttonText}>PRIJAVI SE</Text>}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -103,31 +110,50 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
+  flex: { flex: 1, backgroundColor: colors.bgPage },
   container: { flexGrow: 1, justifyContent: 'center', padding: 24 },
-  header: { alignItems: 'center', marginBottom: 48 },
-  logo: { fontSize: 36, fontWeight: '700', color: '#1a3c6e' },
-  subtitle: { fontSize: 16, color: '#666', marginTop: 4 },
-  form: {},
-  label: { fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 6, marginTop: 16 },
-  input: {
-    borderWidth: 1, borderColor: '#ddd', borderRadius: 10,
-    padding: 14, fontSize: 16, color: '#111', backgroundColor: '#fafafa',
+  header: { alignItems: 'center', marginBottom: 32 },
+  logoBox: {
+    width: 36, height: 36,
+    borderWidth: 1, borderColor: colors.primary,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 12,
   },
-  inputError: { borderColor: '#e53e3e' },
+  logoLetter: { color: colors.primary, fontSize: 16, fontWeight: '600' },
+  logo: { fontSize: 26, fontWeight: '300', color: colors.textPrimary, letterSpacing: 2 },
+  logoBrand: { color: colors.primary, fontWeight: '300' },
+  subtitle: {
+    fontSize: 11, letterSpacing: 3, color: colors.primary,
+    marginTop: 6, fontWeight: '500',
+  },
+  divider: { width: 40, height: 1, backgroundColor: colors.primary, marginTop: 16 },
+  card: {
+    backgroundColor: colors.bgSurface,
+    borderWidth: 1, borderColor: colors.border,
+    borderRadius: 8, padding: 24,
+  },
+  label: {
+    fontSize: 11, fontWeight: '500', letterSpacing: 2,
+    color: colors.textSecondary, marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1, borderColor: colors.border, borderRadius: 4,
+    padding: 14, fontSize: 15, color: colors.textPrimary, backgroundColor: colors.bgPage,
+  },
+  inputError: { borderColor: colors.error },
   passwordContainer: {
     flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1, borderColor: '#ddd', borderRadius: 10,
-    backgroundColor: '#fafafa',
+    borderWidth: 1, borderColor: colors.border, borderRadius: 4,
+    backgroundColor: colors.bgPage,
   },
-  passwordInput: { flex: 1, padding: 14, fontSize: 16, color: '#111' },
+  passwordInput: { flex: 1, padding: 14, fontSize: 15, color: colors.textPrimary },
   eyeBtn: { paddingHorizontal: 14 },
-  eyeText: { fontSize: 18 },
-  errorText: { color: '#e53e3e', fontSize: 12, marginTop: 4 },
+  eyeText: { fontSize: 16 },
+  errorText: { color: colors.error, fontSize: 12, marginTop: 4 },
   button: {
-    backgroundColor: '#1a3c6e', borderRadius: 10,
-    padding: 16, alignItems: 'center', marginTop: 32,
+    backgroundColor: colors.primary, borderRadius: 4,
+    padding: 16, alignItems: 'center', marginTop: 28,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  buttonText: { color: '#fff', fontSize: 13, fontWeight: '600', letterSpacing: 2 },
 });

@@ -4,15 +4,9 @@ import {
   StyleSheet, ActivityIndicator, RefreshControl, Switch,
 } from 'react-native';
 import { getApprovals } from '../../services/approvalService';
+import { colors, status as statusColors, card } from '../../theme';
 
 const POLL_INTERVAL = 5000;
-
-const STATUS_COLORS = {
-  PENDING: '#d97706',
-  APPROVED: '#16a34a',
-  REJECTED: '#dc2626',
-  EXPIRED: '#6b7280',
-};
 
 const getActionLabel = (item) => {
   switch (item.type) {
@@ -67,31 +61,39 @@ export default function ApprovalsScreen({ navigation }) {
     ? approvals
     : approvals.filter((a) => a.status === 'PENDING');
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate('ApprovalDetail', { approvalId: item.id })}
-      activeOpacity={0.7}
-    >
-      <View style={styles.cardRow}>
-        <Text style={styles.cardTitle}>{getActionLabel(item)}</Text>
-        <View style={[styles.badge, { backgroundColor: STATUS_COLORS[item.status] + '22' }]}>
-          <Text style={[styles.badgeText, { color: STATUS_COLORS[item.status] }]}>{item.status}</Text>
+  const renderItem = ({ item }) => {
+    const color = statusColors[item.status] ?? colors.textMuted;
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate('ApprovalDetail', { approvalId: item.id })}
+        activeOpacity={0.7}
+      >
+        <View style={styles.cardRow}>
+          <Text style={styles.cardTitle}>{getActionLabel(item)}</Text>
+          <View style={[styles.badge, { backgroundColor: color + '18' }]}>
+            <Text style={[styles.badgeText, { color }]}>{item.status}</Text>
+          </View>
         </View>
-      </View>
-      <Text style={styles.cardDate}>{formatDate(item.createdAt)}</Text>
-    </TouchableOpacity>
-  );
+        <Text style={styles.cardDate}>{formatDate(item.createdAt)}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   if (loading) {
-    return <View style={styles.centered}><ActivityIndicator size="large" color="#1a3c6e" /></View>;
+    return <View style={styles.centered}><ActivityIndicator size="large" color={colors.primary} /></View>;
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.filterRow}>
-        <Text style={styles.filterLabel}>Prikaži sve zahteve</Text>
-        <Switch value={showAll} onValueChange={setShowAll} trackColor={{ true: '#1a3c6e' }} />
+        <Text style={styles.filterLabel}>PRIKAŽI SVE ZAHTEVE</Text>
+        <Switch
+          value={showAll}
+          onValueChange={setShowAll}
+          trackColor={{ true: colors.primary, false: colors.border }}
+          thumbColor={colors.bgSurface}
+        />
       </View>
 
       <FlatList
@@ -99,7 +101,7 @@ export default function ApprovalsScreen({ navigation }) {
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         contentContainerStyle={displayed.length === 0 ? styles.emptyContainer : styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         ListEmptyComponent={
           <View style={styles.centered}>
             <Text style={styles.emptyText}>Nema aktivnih zahteva</Text>
@@ -111,24 +113,24 @@ export default function ApprovalsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f6fa' },
+  container: { flex: 1, backgroundColor: colors.bgPage },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   filterRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: '#fff', padding: 16, borderBottomWidth: 1, borderBottomColor: '#eee',
+    backgroundColor: colors.bgSurface, padding: 16,
+    borderBottomWidth: 1, borderBottomColor: colors.border,
   },
-  filterLabel: { fontSize: 14, color: '#444' },
+  filterLabel: { fontSize: 11, letterSpacing: 2, color: colors.textSecondary, fontWeight: '500' },
   list: { padding: 12 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
-  emptyText: { color: '#999', fontSize: 15 },
+  emptyText: { color: colors.textMuted, fontSize: 14 },
   card: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 16,
-    marginBottom: 10, elevation: 1,
-    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 },
+    ...card,
+    padding: 16, marginBottom: 8,
   },
   cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#1a1a2e', flex: 1, marginRight: 8 },
-  badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  badgeText: { fontSize: 11, fontWeight: '700' },
-  cardDate: { fontSize: 12, color: '#888' },
+  cardTitle: { fontSize: 14, fontWeight: '500', color: colors.textPrimary, flex: 1, marginRight: 8 },
+  badge: { borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
+  badgeText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
+  cardDate: { fontSize: 12, color: colors.textMuted },
 });

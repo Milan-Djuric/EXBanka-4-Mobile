@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { getApprovalById, rejectRequest } from '../../services/approvalService';
 import { useAuth } from '../../context/AuthContext';
+import { colors } from '../../theme';
 
 const ACTION_LABELS = {
   LOGIN: 'Pokušaj prijave',
@@ -12,7 +13,7 @@ const ACTION_LABELS = {
 };
 
 const POLL_INTERVAL = 5000;
-const TIMEOUT_MS = 5 * 60 * 1000; // 5 minuta
+const TIMEOUT_MS = 5 * 60 * 1000;
 
 export default function PendingApprovalScreen({ navigation, route }) {
   const { approvalRequestId, actionType } = route.params;
@@ -55,9 +56,7 @@ export default function PendingApprovalScreen({ navigation, route }) {
   const handleApproved = async (approval) => {
     stopPolling();
     if (actionType === 'LOGIN' && approval?.payload?.access_token) {
-      // Backend returns tokens in approval payload on login approval
       await loginWithTokens(approval.payload.access_token, approval.payload.refresh_token);
-      // AppNavigator detects user state change and switches to MainTabs automatically
     } else {
       navigation.goBack();
     }
@@ -91,13 +90,19 @@ export default function PendingApprovalScreen({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#1a3c6e" style={styles.spinner} />
+      <View style={styles.logoBox}>
+        <Text style={styles.logoLetter}>A</Text>
+      </View>
+      <Text style={styles.logo}>Anka<Text style={styles.logoBrand}>Banka</Text></Text>
+
+      <ActivityIndicator size="large" color={colors.primary} style={styles.spinner} />
 
       <Text style={styles.title}>Čeka se odobrenje</Text>
+      <View style={styles.divider} />
       <Text style={styles.subtitle}>Potvrdite akciju na mobilnom uređaju</Text>
 
       <View style={styles.actionBox}>
-        <Text style={styles.actionLabel}>Tip akcije</Text>
+        <Text style={styles.actionLabel}>TIP AKCIJE</Text>
         <Text style={styles.actionValue}>{ACTION_LABELS[actionType] ?? actionType}</Text>
       </View>
 
@@ -112,8 +117,8 @@ export default function PendingApprovalScreen({ navigation, route }) {
         disabled={cancelling}
       >
         {cancelling
-          ? <ActivityIndicator color="#e53e3e" />
-          : <Text style={styles.cancelText}>Otkaži</Text>}
+          ? <ActivityIndicator color={colors.error} />
+          : <Text style={styles.cancelText}>OTKAŽI</Text>}
       </TouchableOpacity>
     </View>
   );
@@ -121,23 +126,31 @@ export default function PendingApprovalScreen({ navigation, route }) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, backgroundColor: '#fff',
+    flex: 1, backgroundColor: colors.bgSurface,
     alignItems: 'center', justifyContent: 'center', padding: 32,
   },
-  spinner: { marginBottom: 32 },
-  title: { fontSize: 22, fontWeight: '700', color: '#1a3c6e', marginBottom: 8 },
-  subtitle: { fontSize: 15, color: '#555', textAlign: 'center', marginBottom: 32 },
-  actionBox: {
-    backgroundColor: '#f0f4ff', borderRadius: 12,
-    padding: 16, width: '100%', marginBottom: 24,
+  logoBox: {
+    width: 32, height: 32, borderWidth: 1, borderColor: colors.primary,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 8,
   },
-  actionLabel: { fontSize: 12, color: '#888', marginBottom: 4 },
-  actionValue: { fontSize: 16, fontWeight: '600', color: '#1a3c6e' },
-  hint: { fontSize: 13, color: '#888', textAlign: 'center', lineHeight: 20, marginBottom: 40 },
+  logoLetter: { color: colors.primary, fontSize: 14, fontWeight: '600' },
+  logo: { fontSize: 20, fontWeight: '300', color: colors.textPrimary, letterSpacing: 2, marginBottom: 32 },
+  logoBrand: { color: colors.primary },
+  spinner: { marginBottom: 24 },
+  title: { fontSize: 20, fontWeight: '300', color: colors.textPrimary, letterSpacing: 1, marginBottom: 12 },
+  divider: { width: 32, height: 1, backgroundColor: colors.primary, marginBottom: 12 },
+  subtitle: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginBottom: 28 },
+  actionBox: {
+    borderWidth: 1, borderColor: colors.border, borderRadius: 4,
+    padding: 16, width: '100%', marginBottom: 24, backgroundColor: colors.bgPage,
+  },
+  actionLabel: { fontSize: 10, letterSpacing: 2, color: colors.textMuted, marginBottom: 6, fontWeight: '500' },
+  actionValue: { fontSize: 15, color: colors.textPrimary },
+  hint: { fontSize: 12, color: colors.textMuted, textAlign: 'center', lineHeight: 20, marginBottom: 36 },
   cancelBtn: {
-    borderWidth: 1.5, borderColor: '#e53e3e', borderRadius: 10,
-    paddingVertical: 14, paddingHorizontal: 40,
+    borderWidth: 1, borderColor: colors.error, borderRadius: 4,
+    paddingVertical: 12, paddingHorizontal: 40,
   },
   btnDisabled: { opacity: 0.5 },
-  cancelText: { color: '#e53e3e', fontWeight: '600', fontSize: 15 },
+  cancelText: { color: colors.error, fontWeight: '600', fontSize: 12, letterSpacing: 2 },
 });

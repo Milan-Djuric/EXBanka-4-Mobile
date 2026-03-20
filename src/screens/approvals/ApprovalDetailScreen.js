@@ -4,13 +4,7 @@ import {
   StyleSheet, ActivityIndicator, Alert,
 } from 'react-native';
 import { getApprovalById, approveRequest, rejectRequest } from '../../services/approvalService';
-
-const STATUS_COLORS = {
-  PENDING: '#d97706',
-  APPROVED: '#16a34a',
-  REJECTED: '#dc2626',
-  EXPIRED: '#6b7280',
-};
+import { colors, status as statusColors, card } from '../../theme';
 
 const Row = ({ label, value }) => (
   <View style={styles.row}>
@@ -80,7 +74,7 @@ export default function ApprovalDetailScreen({ navigation, route }) {
   const { approvalId } = route.params;
   const [approval, setApproval] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(null); // 'approve' | 'reject' | null
+  const [actionLoading, setActionLoading] = useState(null);
 
   const fetchApproval = useCallback(async () => {
     try {
@@ -131,19 +125,18 @@ export default function ApprovalDetailScreen({ navigation, route }) {
   };
 
   if (loading) {
-    return <View style={styles.centered}><ActivityIndicator size="large" color="#1a3c6e" /></View>;
+    return <View style={styles.centered}><ActivityIndicator size="large" color={colors.primary} /></View>;
   }
 
   const isPending = approval.status === 'PENDING';
   const PayloadComponent = PAYLOAD_COMPONENTS[approval.type];
-  const statusColor = STATUS_COLORS[approval.status] ?? '#888';
+  const statusColor = statusColors[approval.status] ?? colors.textMuted;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
       <View style={styles.headerCard}>
         <Text style={styles.actionTitle}>{ACTION_LABELS[approval.type] ?? approval.type}</Text>
-        <View style={[styles.badge, { backgroundColor: statusColor + '22' }]}>
+        <View style={[styles.badge, { backgroundColor: statusColor + '18' }]}>
           <Text style={[styles.badgeText, { color: statusColor }]}>{approval.status}</Text>
         </View>
         <Text style={styles.dateText}>
@@ -151,15 +144,13 @@ export default function ApprovalDetailScreen({ navigation, route }) {
         </Text>
       </View>
 
-      {/* Payload details */}
       <View style={styles.detailCard}>
-        <Text style={styles.sectionTitle}>Detalji akcije</Text>
+        <Text style={styles.sectionTitle}>DETALJI AKCIJE</Text>
         {PayloadComponent
           ? <PayloadComponent payload={approval.payload ?? {}} />
           : <Text style={styles.noPayload}>Nema dodatnih podataka.</Text>}
       </View>
 
-      {/* Actions */}
       {isPending && (
         <View style={styles.actionRow}>
           <TouchableOpacity
@@ -168,8 +159,8 @@ export default function ApprovalDetailScreen({ navigation, route }) {
             disabled={!!actionLoading}
           >
             {actionLoading === 'reject'
-              ? <ActivityIndicator color="#dc2626" />
-              : <Text style={styles.rejectText}>Odbij</Text>}
+              ? <ActivityIndicator color={colors.error} />
+              : <Text style={styles.rejectText}>ODBIJ</Text>}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -179,7 +170,7 @@ export default function ApprovalDetailScreen({ navigation, route }) {
           >
             {actionLoading === 'approve'
               ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.approveText}>Odobri</Text>}
+              : <Text style={styles.approveText}>ODOBRI</Text>}
           </TouchableOpacity>
         </View>
       )}
@@ -194,38 +185,34 @@ export default function ApprovalDetailScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f6fa' },
+  container: { flex: 1, backgroundColor: colors.bgPage },
   content: { padding: 16, paddingBottom: 40 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  headerCard: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 20,
-    alignItems: 'center', marginBottom: 12,
-    elevation: 1, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 },
+  headerCard: { ...card, padding: 20, alignItems: 'center', marginBottom: 8 },
+  actionTitle: { fontSize: 17, fontWeight: '500', color: colors.textPrimary, marginBottom: 10, textAlign: 'center' },
+  badge: { borderRadius: 4, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 8 },
+  badgeText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
+  dateText: { fontSize: 12, color: colors.textMuted },
+  detailCard: { ...card, padding: 16, marginBottom: 8 },
+  sectionTitle: { fontSize: 10, fontWeight: '600', letterSpacing: 2, color: colors.textMuted, marginBottom: 12 },
+  row: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border,
   },
-  actionTitle: { fontSize: 18, fontWeight: '700', color: '#1a1a2e', marginBottom: 8 },
-  badge: { borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 8 },
-  badgeText: { fontSize: 13, fontWeight: '700' },
-  dateText: { fontSize: 12, color: '#888' },
-  detailCard: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12,
-    elevation: 1, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 },
-  },
-  sectionTitle: { fontSize: 13, fontWeight: '700', color: '#888', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  rowLabel: { fontSize: 14, color: '#666', flex: 1 },
-  rowValue: { fontSize: 14, color: '#111', fontWeight: '500', flex: 1, textAlign: 'right' },
-  noPayload: { color: '#aaa', fontSize: 14 },
-  actionRow: { flexDirection: 'row', gap: 12, marginTop: 8 },
+  rowLabel: { fontSize: 13, color: colors.textSecondary, flex: 1 },
+  rowValue: { fontSize: 13, color: colors.textPrimary, fontWeight: '500', flex: 1, textAlign: 'right' },
+  noPayload: { color: colors.textMuted, fontSize: 14 },
+  actionRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
   rejectBtn: {
-    flex: 1, borderWidth: 2, borderColor: '#dc2626', borderRadius: 12,
+    flex: 1, borderWidth: 1, borderColor: colors.error, borderRadius: 4,
     paddingVertical: 16, alignItems: 'center',
   },
-  rejectText: { color: '#dc2626', fontWeight: '700', fontSize: 16 },
+  rejectText: { color: colors.error, fontWeight: '600', fontSize: 12, letterSpacing: 1.5 },
   approveBtn: {
-    flex: 1, backgroundColor: '#16a34a', borderRadius: 12,
+    flex: 1, backgroundColor: colors.success, borderRadius: 4,
     paddingVertical: 16, alignItems: 'center',
   },
-  approveText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  approveText: { color: '#fff', fontWeight: '600', fontSize: 12, letterSpacing: 1.5 },
   btnDisabled: { opacity: 0.5 },
-  resolvedNote: { textAlign: 'center', color: '#888', fontSize: 14, marginTop: 16 },
+  resolvedNote: { textAlign: 'center', color: colors.textMuted, fontSize: 13, marginTop: 16 },
 });

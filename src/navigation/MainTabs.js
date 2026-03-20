@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { colors } from '../theme';
 
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import AccountsScreen from '../screens/accounts/AccountsScreen';
@@ -55,7 +56,12 @@ function ProfileStack() {
 
 export default function MainTabs() {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
+    <Tab.Navigator screenOptions={{
+      headerShown: false,
+      tabBarActiveTintColor: colors.primary,
+      tabBarInactiveTintColor: colors.textMuted,
+      tabBarStyle: { borderTopColor: colors.border },
+    }}>
       <Tab.Screen name="DashboardTab" component={DashboardStack} options={{ title: 'Početna' }} />
       <Tab.Screen name="AccountsTab" component={AccountsStack} options={{ title: 'Računi' }} />
       <Tab.Screen name="PaymentsTab" component={PaymentsStack} options={{ title: 'Plaćanja' }} />

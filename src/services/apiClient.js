@@ -27,7 +27,7 @@ apiClient.interceptors.response.use(
       original._retry = true;
       try {
         const refreshToken = await SecureStore.getItemAsync('refresh_token');
-        const { data } = await axios.post(`${API_BASE_URL}/api/client/refresh`, {
+        const { data } = await axios.post(`${API_BASE_URL}/client/refresh`, {
           refresh_token: refreshToken,
         });
         await SecureStore.setItemAsync('access_token', data.access_token);
