@@ -136,6 +136,18 @@ export default function AccountDetailScreen({ route, navigation }) {
         >
           <Text style={[styles.actionBtnText, styles.actionBtnTextOutline]}>Promena naziva</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.actionBtnOutline]}
+          onPress={() => navigation.navigate('LimitChange', {
+            accountId,
+            accountNumber: account.accountNumber,
+            dailyLimit:    account.dailyLimit,
+            monthlyLimit:  account.monthlyLimit,
+            currency:      account.currency ?? '',
+          })}
+        >
+          <Text style={[styles.actionBtnText, styles.actionBtnTextOutline]}>Promena limita</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
