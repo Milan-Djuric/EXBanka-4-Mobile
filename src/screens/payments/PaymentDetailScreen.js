@@ -104,7 +104,8 @@ export default function PaymentDetailScreen({ route }) {
       {/* Parties */}
       <Text style={styles.sectionTitle}>Strane u plaćanju</Text>
       <View style={[card, styles.section]}>
-        <Row label="Pošiljalac"    value={payment.senderName} />
+        <Row label="Pošiljalac"      value={payment.senderName} />
+        <Row label="Adresa pošiljaoca" value={payment.senderAddress} />
         <Row label="Sa računa"     value={payment.fromAccount} />
         <Row label="Primalac"      value={payment.recipientName} />
         <Row label="Na račun"      value={payment.toAccount} />

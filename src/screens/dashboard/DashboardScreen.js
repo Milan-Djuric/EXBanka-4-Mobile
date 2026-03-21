@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { getMyAccounts } from '../../services/accountService';
-import { getPayments, getRecipients } from '../../services/paymentService';
+import { getPayments, getRecipients, getTransfers } from '../../services/paymentService';
 import { card, colors } from '../../theme';
 
 function fmt(amount, currency) {
@@ -52,7 +52,9 @@ function TxRow({ payment, accountNumber, onPress }) {
       </View>
       <View style={styles.txInfo}>
         <Text style={styles.txPurpose} numberOfLines={1}>
-          {payment.purpose || (isIncoming ? payment.senderName : payment.recipientName) || '—'}
+          {payment._type === 'transfer'
+            ? `Interni transfer → ${payment.toAccount}`
+            : payment.purpose || (isIncoming ? payment.senderName : payment.recipientName) || '—'}
         </Text>
         <Text style={styles.txDate}>{fmtDate(payment.timestamp)}</Text>
       </View>
@@ -87,6 +89,7 @@ export default function DashboardScreen({ navigation }) {
   const { user, logout } = useAuth();
   const [accounts, setAccounts] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [transfers, setTransfers] = useState([]);
   const [recipients, setRecipients] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -96,14 +99,16 @@ export default function DashboardScreen({ navigation }) {
   const load = useCallback(async () => {
     try {
       setError(null);
-      const [accs, pmts, recs] = await Promise.all([
+      const [accs, pmts, xfers, recs] = await Promise.all([
         getMyAccounts(),
         getPayments(),
+        getTransfers().catch(() => []),
         getRecipients().catch(() => []),
       ]);
       const sorted = [...accs].sort((a, b) => b.availableBalance - a.availableBalance);
       setAccounts(sorted);
       setPayments(pmts);
+      setTransfers(xfers ?? []);
       setRecipients(recs.slice(0, 5));
       setSelectedAccount((prev) => {
         if (prev && sorted.find((a) => a.accountId === prev.accountId)) return prev;
@@ -123,8 +128,15 @@ export default function DashboardScreen({ navigation }) {
   }, [load]);
 
   const accountTxs = selectedAccount
-    ? payments
-        .filter((p) => p.fromAccount === selectedAccount.accountNumber || p.toAccount === selectedAccount.accountNumber)
+    ? [
+        ...payments
+          .filter((p) => p.fromAccount === selectedAccount.accountNumber || p.toAccount === selectedAccount.accountNumber)
+          .map((p) => ({ ...p, _type: 'payment' })),
+        ...transfers
+          .filter((t) => t.fromAccount === selectedAccount.accountNumber || t.toAccount === selectedAccount.accountNumber)
+          .map((t) => ({ ...t, _type: 'transfer' })),
+      ]
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
         .slice(0, 5)
     : [];
 
@@ -176,12 +188,16 @@ export default function DashboardScreen({ navigation }) {
         <Text style={styles.emptyText}>Nema transakcija za ovaj račun.</Text>
       ) : (
         <View style={card}>
-          {accountTxs.map((p) => (
+          {accountTxs.map((item) => (
             <TxRow
-              key={p.id}
-              payment={p}
+              key={`${item._type}-${item.id}`}
+              payment={item}
               accountNumber={selectedAccount?.accountNumber}
-              onPress={() => navigation.navigate('PaymentsTab', { screen: 'PaymentDetail', params: { paymentId: p.id } })}
+              onPress={() =>
+                item._type === 'transfer'
+                  ? navigation.navigate('PaymentsTab', { screen: 'TransferDetail', params: { transfer: item } })
+                  : navigation.navigate('PaymentsTab', { screen: 'PaymentDetail', params: { paymentId: item.id } })
+              }
             />
           ))}
         </View>

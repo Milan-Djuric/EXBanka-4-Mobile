@@ -14,6 +14,7 @@ import NewPaymentScreen from '../screens/payments/NewPaymentScreen';
 import AddRecipientScreen from '../screens/payments/AddRecipientScreen';
 import NewTransferScreen from '../screens/payments/NewTransferScreen';
 import TransfersScreen from '../screens/payments/TransfersScreen';
+import TransferDetailScreen from '../screens/payments/TransferDetailScreen';
 import ApprovalsScreen from '../screens/approvals/ApprovalsScreen';
 import ApprovalDetailScreen from '../screens/approvals/ApprovalDetailScreen';
 
@@ -52,6 +53,7 @@ function PaymentsStack() {
       <Stack.Screen name="AddRecipient"   component={AddRecipientScreen}   options={{ title: 'Dodaj primaoca' }} />
       <Stack.Screen name="NewTransfer"    component={NewTransferScreen}    options={{ title: 'Novi transfer' }} />
       <Stack.Screen name="Transfers"      component={TransfersScreen}      options={{ title: 'Transferi' }} />
+      <Stack.Screen name="TransferDetail" component={TransferDetailScreen} options={{ title: 'Detalji transfera' }} />
       <Stack.Screen name="PendingApproval" component={PendingApprovalScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );

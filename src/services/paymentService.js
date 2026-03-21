@@ -1,7 +1,9 @@
 import apiClient from './apiClient';
 
 export const getPayments = async (params = {}) => {
-  const { data } = await apiClient.get('/api/payments', { params });
+  const { data } = await apiClient.get('/api/payments', {
+    params: { limit: 20, ...params },
+  });
   return data;
 };
 
@@ -37,5 +39,10 @@ export const updateRecipient = async (id, payload) => {
 
 export const deleteRecipient = async (id) => {
   const { data } = await apiClient.delete(`/api/recipients/${id}`);
+  return data;
+};
+
+export const getTransfers = async () => {
+  const { data } = await apiClient.get('/api/transfers');
   return data;
 };

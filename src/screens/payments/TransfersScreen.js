@@ -9,13 +9,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { getMyAccounts } from '../../services/accountService';
-import { getPayments } from '../../services/paymentService';
+import { getTransfers } from '../../services/paymentService';
 import { card, colors } from '../../theme';
 
 function fmtDate(ts) {
   if (!ts) return '—';
-  return new Date(ts).toLocaleDateString('sr-RS');
+  return new Date(ts).toLocaleString('sr-RS');
 }
 
 function fmtAmt(amount) {
@@ -23,40 +22,54 @@ function fmtAmt(amount) {
 }
 
 function TransferItem({ item, onPress }) {
+  const isCross = item.exchangeRate && item.exchangeRate !== 1;
   return (
     <TouchableOpacity style={[card, styles.item]} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.itemRow}>
-        <Text style={styles.label}>Sa računa</Text>
-        <Text style={styles.value} numberOfLines={1}>{item.fromAccount}</Text>
+      <View style={styles.itemHeader}>
+        <View style={styles.dirIcon}>
+          <Text style={styles.dirArrow}>⇄</Text>
+        </View>
+        <View style={styles.itemInfo}>
+          <Text style={styles.itemAccounts} numberOfLines={1}>
+            {item.fromAccount}
+          </Text>
+          <Text style={styles.itemAccountsTo} numberOfLines={1}>
+            → {item.toAccount}
+          </Text>
+          <Text style={styles.itemDate}>{fmtDate(item.timestamp)}</Text>
+        </View>
+        <View style={styles.itemRight}>
+          <Text style={styles.itemAmountSent}>{fmtAmt(item.initialAmount)}</Text>
+          {isCross && (
+            <Text style={styles.itemAmountReceived}>→ {fmtAmt(item.finalAmount)}</Text>
+          )}
+        </View>
       </View>
-      <View style={styles.itemRow}>
-        <Text style={styles.label}>Na račun</Text>
-        <Text style={styles.value} numberOfLines={1}>{item.toAccount}</Text>
-      </View>
-      <View style={styles.itemBottom}>
-        <Text style={styles.date}>{fmtDate(item.timestamp)}</Text>
-        <Text style={styles.amount}>{fmtAmt(item.finalAmount)} RSD</Text>
-      </View>
+      {(isCross || item.fee > 0) && (
+        <View style={styles.itemMeta}>
+          {isCross && (
+            <Text style={styles.metaText}>Kurs: {Number(item.exchangeRate).toFixed(4)}</Text>
+          )}
+          {item.fee > 0 && (
+            <Text style={styles.metaText}>Provizija: {fmtAmt(item.fee)}</Text>
+          )}
+        </View>
+      )}
     </TouchableOpacity>
   );
 }
 
 export default function TransfersScreen({ navigation }) {
-  const [transfers, setTransfers] = useState([]);
-  const [loading, setLoading]     = useState(true);
+  const [transfers, setTransfers]   = useState([]);
+  const [loading, setLoading]       = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError]           = useState(null);
 
   const load = useCallback(async () => {
     try {
       setError(null);
-      const [payments, accounts] = await Promise.all([getPayments(), getMyAccounts()]);
-      const myNumbers = new Set((accounts ?? []).map(a => a.accountNumber));
-      // A transfer has both fromAccount and toAccount belonging to this user
-      const xfers = (payments ?? []).filter(
-        p => myNumbers.has(p.fromAccount) && myNumbers.has(p.toAccount)
-      );
-      setTransfers(xfers);
+      const data = await getTransfers();
+      setTransfers(data ?? []);
     } catch {
       setError('Greška pri učitavanju transfera.');
     }
@@ -96,7 +109,7 @@ export default function TransfersScreen({ navigation }) {
           renderItem={({ item }) => (
             <TransferItem
               item={item}
-              onPress={() => navigation.navigate('PaymentDetail', { paymentId: item.id })}
+              onPress={() => navigation.navigate('TransferDetail', { transfer: item })}
             />
           )}
           contentContainerStyle={styles.list}
@@ -123,13 +136,20 @@ const styles = StyleSheet.create({
   actionBtn:     { backgroundColor: colors.primary, paddingVertical: 10, borderRadius: 6, alignItems: 'center' },
   actionBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
 
-  list: { padding: 16, gap: 10, paddingBottom: 40 },
+  list: { padding: 16, gap: 8, paddingBottom: 40 },
 
-  item:     { padding: 14 },
-  itemRow:  { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  label:    { fontSize: 12, color: colors.textMuted },
-  value:    { fontSize: 13, color: colors.textPrimary, fontWeight: '500', textAlign: 'right', flex: 1, marginLeft: 8 },
-  itemBottom: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
-  date:     { fontSize: 12, color: colors.textMuted },
-  amount:   { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
+  item:        { padding: 12 },
+  itemHeader:  { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  dirIcon:     { width: 36, height: 36, borderRadius: 18, backgroundColor: '#e0f2fe', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  dirArrow:    { fontSize: 16, fontWeight: '700', color: '#0284c7' },
+  itemInfo:    { flex: 1, minWidth: 0 },
+  itemAccounts:    { fontSize: 12, color: colors.textPrimary, fontWeight: '500' },
+  itemAccountsTo:  { fontSize: 12, color: colors.textMuted },
+  itemDate:        { fontSize: 11, color: colors.textMuted, marginTop: 2 },
+  itemRight:       { alignItems: 'flex-end', flexShrink: 0 },
+  itemAmountSent:  { fontSize: 14, fontWeight: '700', color: colors.textPrimary },
+  itemAmountReceived: { fontSize: 12, color: colors.success, marginTop: 2 },
+
+  itemMeta: { flexDirection: 'row', gap: 12, marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border },
+  metaText: { fontSize: 11, color: colors.textMuted },
 });

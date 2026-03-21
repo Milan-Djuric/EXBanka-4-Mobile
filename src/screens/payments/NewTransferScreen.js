@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -19,7 +20,8 @@ function fmt(amount, currency) {
 }
 
 export default function NewTransferScreen({ navigation }) {
-  const [accounts, setAccounts]   = useState([]);
+  const { user } = useAuth();
+  const [accounts, setAccounts]       = useState([]);
   const [loadingInit, setLoadingInit] = useState(true);
 
   const [fromAccount, setFromAccount] = useState('');
@@ -29,7 +31,8 @@ export default function NewTransferScreen({ navigation }) {
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker]     = useState(false);
 
-  const [step, setStep]     = useState('form'); // 'form' | 'confirm'
+  const [step, setStep]     = useState('form'); // 'form' | 'confirm' | 'result'
+  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
 
@@ -46,6 +49,7 @@ export default function NewTransferScreen({ navigation }) {
 
   const selectedFrom = accounts.find(a => a.accountNumber === fromAccount);
   const selectedTo   = accounts.find(a => a.accountNumber === toAccount);
+  const crossCurrency = selectedFrom && selectedTo && selectedFrom.currency !== selectedTo.currency;
 
   const validateForm = () => {
     if (!fromAccount) return 'Izaberite izvorni račun.';
@@ -69,8 +73,9 @@ export default function NewTransferScreen({ navigation }) {
     setError(null);
     try {
       const amt = parseFloat(amount.replace(',', '.'));
-      await createTransfer({ fromAccount, toAccount, amount: amt });
-      navigation.navigate('Payments');
+      const data = await createTransfer({ fromAccount, toAccount, amount: amt });
+      setResult(data);
+      setStep('result');
     } catch (e) {
       setError(e?.response?.data?.error || 'Greška. Pokušajte ponovo.');
       setStep('form');
@@ -93,6 +98,53 @@ export default function NewTransferScreen({ navigation }) {
 
   const amt = parseFloat(amount.replace(',', '.')) || 0;
 
+  // ── Result step ──────────────────────────────────────────────────────────────
+  if (step === 'result') {
+    const hasCross = result && (result.exchangeRate !== 1 || result.fee > 0);
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.successBadge}>
+          <Text style={styles.successIcon}>✓</Text>
+          <Text style={styles.successTitle}>Transfer uspešan</Text>
+        </View>
+
+        <View style={[card, styles.section]}>
+          {[
+            ['Sa računa',      `${selectedFrom?.accountName ?? ''} (${fromAccount})`],
+            ['Na račun',       `${selectedTo?.accountName ?? ''} (${toAccount})`],
+            ['Poslato',        fmt(result?.initialAmount ?? amt, selectedFrom?.currency)],
+            ['Primljeno',      fmt(result?.finalAmount   ?? amt, selectedTo?.currency)],
+          ].map(([label, value]) => (
+            <View key={label} style={styles.row}>
+              <Text style={styles.rowLabel}>{label}</Text>
+              <Text style={styles.rowValue}>{value}</Text>
+            </View>
+          ))}
+          {hasCross && result.exchangeRate !== 1 && (
+            <View style={styles.row}>
+              <Text style={styles.rowLabel}>Kurs</Text>
+              <Text style={styles.rowValue}>{Number(result.exchangeRate).toFixed(4)}</Text>
+            </View>
+          )}
+          {hasCross && result.fee > 0 && (
+            <View style={styles.row}>
+              <Text style={styles.rowLabel}>Provizija</Text>
+              <Text style={styles.rowValue}>{fmt(result.fee, selectedFrom?.currency)}</Text>
+            </View>
+          )}
+        </View>
+
+        <TouchableOpacity style={styles.btn} onPress={() => navigation.navigate('Transfers')}>
+          <Text style={styles.btnText}>Istorija transfera</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.navigate('Payments')}>
+          <Text style={styles.cancelText}>Zatvori</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    );
+  }
+
+  // ── Confirm step ─────────────────────────────────────────────────────────────
   if (step === 'confirm') {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -100,9 +152,10 @@ export default function NewTransferScreen({ navigation }) {
 
         <View style={[card, styles.section]}>
           {[
-            ['Sa računa',    `${selectedFrom?.accountName ?? ''} (${fromAccount})`],
-            ['Na račun',     `${selectedTo?.accountName ?? ''} (${toAccount})`],
-            ['Iznos',        fmt(amt, selectedFrom?.currencyCode)],
+            ['Klijent',   `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim()],
+            ['Sa računa', `${selectedFrom?.accountName ?? ''} (${fromAccount})`],
+            ['Na račun',  `${selectedTo?.accountName ?? ''} (${toAccount})`],
+            ['Iznos',     fmt(amt, selectedFrom?.currency)],
           ].map(([label, value]) => (
             <View key={label} style={styles.row}>
               <Text style={styles.rowLabel}>{label}</Text>
@@ -111,15 +164,11 @@ export default function NewTransferScreen({ navigation }) {
           ))}
         </View>
 
-        {selectedFrom?.currencyCode !== selectedTo?.currencyCode && (
+        {crossCurrency && (
           <Text style={styles.hint}>
-            Računi su u različitim valutama. Primenjivaće se tržišni kurs u trenutku izvršenja transfera.
+            Računi su u različitim valutama. Primenjivaće se tržišni kurs u trenutku izvršenja.
           </Text>
         )}
-
-        <Text style={styles.hint}>
-          Transfer zahteva odobrenje. Nakon potvrde bićete obavešteni putem aplikacije.
-        </Text>
 
         {error && <Text style={styles.error}>{error}</Text>}
 
@@ -133,6 +182,7 @@ export default function NewTransferScreen({ navigation }) {
     );
   }
 
+  // ── Form step ─────────────────────────────────────────────────────────────────
   const toAccounts   = accounts.filter(a => a.accountNumber !== fromAccount);
   const fromAccounts = accounts.filter(a => a.accountNumber !== toAccount);
 
@@ -147,7 +197,7 @@ export default function NewTransferScreen({ navigation }) {
           <View style={{ flex: 1 }}>
             <Text style={styles.pickerText}>{selectedFrom?.accountName ?? 'Izaberite račun'}</Text>
             {selectedFrom && (
-              <Text style={styles.pickerSub}>{selectedFrom.accountNumber} · {fmt(selectedFrom.availableBalance, selectedFrom.currencyCode)}</Text>
+              <Text style={styles.pickerSub}>{selectedFrom.accountNumber} · {fmt(selectedFrom.availableBalance, selectedFrom.currency)}</Text>
             )}
           </View>
           <Text style={styles.pickerArrow}>{showFromPicker ? '▲' : '▼'}</Text>
@@ -173,7 +223,7 @@ export default function NewTransferScreen({ navigation }) {
           <View style={{ flex: 1 }}>
             <Text style={styles.pickerText}>{selectedTo?.accountName ?? 'Izaberite račun'}</Text>
             {selectedTo && (
-              <Text style={styles.pickerSub}>{selectedTo.accountNumber} · {fmt(selectedTo.availableBalance, selectedTo.currencyCode)}</Text>
+              <Text style={styles.pickerSub}>{selectedTo.accountNumber} · {fmt(selectedTo.availableBalance, selectedTo.currency)}</Text>
             )}
           </View>
           <Text style={styles.pickerArrow}>{showToPicker ? '▲' : '▼'}</Text>
@@ -195,7 +245,7 @@ export default function NewTransferScreen({ navigation }) {
 
         {/* Amount */}
         <Text style={styles.label}>
-          Iznos ({selectedFrom?.currencyCode ?? 'RSD'})
+          Iznos ({selectedFrom?.currency ?? 'RSD'})
         </Text>
         <TextInput
           style={styles.input}
@@ -226,6 +276,10 @@ const styles = StyleSheet.create({
   emptyText: { color: colors.textMuted, textAlign: 'center', fontSize: 14 },
   pageTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 20 },
 
+  successBadge: { alignItems: 'center', marginBottom: 24 },
+  successIcon:  { fontSize: 48, color: colors.success },
+  successTitle: { fontSize: 18, fontWeight: '700', color: colors.success, marginTop: 8 },
+
   label: { fontSize: 13, color: colors.textSecondary, marginBottom: 6, marginTop: 4 },
   input: {
     borderWidth: 1, borderColor: colors.border, borderRadius: 8,
@@ -242,8 +296,8 @@ const styles = StyleSheet.create({
   pickerSub:   { fontSize: 12, color: colors.textMuted, marginTop: 2 },
   pickerArrow: { fontSize: 12, color: colors.textMuted, marginLeft: 8 },
 
-  dropdownCard: { marginBottom: 12, overflow: 'hidden' },
-  dropdownItem: { padding: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
+  dropdownCard:     { marginBottom: 12, overflow: 'hidden' },
+  dropdownItem:     { padding: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
   dropdownItemText: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
   dropdownItemSub:  { fontSize: 12, color: colors.textMuted, marginTop: 2 },
 
