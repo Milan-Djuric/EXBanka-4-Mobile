@@ -114,10 +114,6 @@ export default function ExchangeCalculatorScreen() {
     setToCurrency(fromCurrency);
   };
 
-  const finalAmount = result
-    ? result.toAmount - (result.commission ?? 0)
-    : null;
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.disclaimer}>
@@ -170,18 +166,13 @@ export default function ExchangeCalculatorScreen() {
             label="Kurs"
             value={`1 ${result.fromCurrency} = ${fmtAmt(result.rate, 4)} ${result.toCurrency}`}
           />
-          <View style={styles.divider} />
           <ResultRow
-            label={`Iznos u ${result.toCurrency}`}
-            value={`${fmtAmt(result.toAmount)} ${result.toCurrency}`}
-          />
-          <ResultRow
-            label="Provizija (0.5%)"
+            label={`Provizija (0.5%)`}
             value={`${fmtAmt(result.commission)} ${result.fromCurrency}`}
           />
           <View style={styles.divider} />
           <View style={styles.resultRow}>
-            <Text style={styles.finalLabel}>Konačan iznos</Text>
+            <Text style={styles.finalLabel}>Primate</Text>
             <Text style={styles.finalValue}>
               {fmtAmt(result.toAmount)} {result.toCurrency}
             </Text>
