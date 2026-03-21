@@ -21,6 +21,8 @@ import ApprovalsScreen from '../screens/approvals/ApprovalsScreen';
 import ApprovalDetailScreen from '../screens/approvals/ApprovalDetailScreen';
 
 import ProfileScreen from '../screens/profile/ProfileScreen';
+import ExchangeRatesScreen from '../screens/exchange/ExchangeRatesScreen';
+import ExchangeCalculatorScreen from '../screens/exchange/ExchangeCalculatorScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -72,6 +74,15 @@ function ApprovalsStack() {
   );
 }
 
+function ExchangeStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="ExchangeRates"      component={ExchangeRatesScreen}      options={{ title: 'Menjačnica' }} />
+      <Stack.Screen name="ExchangeCalculator" component={ExchangeCalculatorScreen} options={{ title: 'Kalkulator' }} />
+    </Stack.Navigator>
+  );
+}
+
 function ProfileStack() {
   return (
     <Stack.Navigator>
@@ -92,6 +103,7 @@ export default function MainTabs() {
       <Tab.Screen name="AccountsTab" component={AccountsStack} options={{ title: 'Računi' }} />
       <Tab.Screen name="PaymentsTab" component={PaymentsStack} options={{ title: 'Plaćanja' }} />
       <Tab.Screen name="ApprovalsTab" component={ApprovalsStack} options={{ title: 'Verifikacija' }} />
+      <Tab.Screen name="ExchangeTab" component={ExchangeStack} options={{ title: 'Menjačnica' }} />
       <Tab.Screen name="ProfileTab" component={ProfileStack} options={{ title: 'Profil' }} />
     </Tab.Navigator>
   );
