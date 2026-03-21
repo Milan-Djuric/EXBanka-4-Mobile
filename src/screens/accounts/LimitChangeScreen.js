@@ -39,8 +39,10 @@ export default function LimitChangeScreen({ route, navigation }) {
       const approval = await createApproval('LIMIT_CHANGE', {
         accountId,
         accountNumber,
-        dailyLimit: dailyVal,
-        monthlyLimit: monthlyVal,
+        oldDailyLimit:   dailyLimit ?? 0,
+        oldMonthlyLimit: monthlyLimit ?? 0,
+        dailyLimit:      dailyVal,
+        monthlyLimit:    monthlyVal,
       });
       navigation.replace('PendingApproval', {
         approvalRequestId: approval.id,
