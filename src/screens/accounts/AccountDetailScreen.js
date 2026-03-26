@@ -28,10 +28,8 @@ function Row({ label, value }) {
 }
 
 const ACCOUNT_TYPE_LABELS = {
-  CURRENT:          'Tekući',
-  SAVINGS:          'Štedni',
-  FOREIGN_CURRENCY: 'Devizni',
-  BUSINESS:         'Poslovni',
+  personal: 'Lični',
+  business: 'Poslovni',
 };
 
 export default function AccountDetailScreen({ route, navigation }) {
@@ -109,7 +107,7 @@ export default function AccountDetailScreen({ route, navigation }) {
       </View>
 
       {/* Business */}
-      {account.accountType === 'BUSINESS' && account.companyName && (
+      {account.accountType === 'business' && account.companyName && (
         <>
           <Text style={styles.sectionTitle}>Podaci o firmi</Text>
           <View style={[card, styles.section]}>

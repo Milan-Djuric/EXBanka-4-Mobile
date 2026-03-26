@@ -95,7 +95,7 @@ export default function CardRequestScreen({ navigation }) {
   }));
 
   const selectedAccount = accounts.find((a) => a.accountId === selectedAccountId);
-  const isBusinessAccount = selectedAccountType === 'BUSINESS';
+  const isBusinessAccount = selectedAccountType === 'business';
 
   const updateAP = (field, value) =>
     setAuthorizedPerson((prev) => ({ ...prev, [field]: value }));

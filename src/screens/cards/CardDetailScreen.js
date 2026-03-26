@@ -89,7 +89,7 @@ export default function CardDetailScreen({ route }) {
           onPress: async () => {
             setBlocking(true);
             try {
-              await blockCard(cardData.cardNumber);
+              await blockCard(cardData.id);
               Alert.alert(
                 'Kartica blokirana',
                 'Kartica je uspešno blokirana. Za deblokadu kontaktirajte banku.',
